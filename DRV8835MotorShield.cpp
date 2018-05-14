@@ -1,8 +1,8 @@
 #include "DRV8835MotorShield.h"
-const unsigned char DRV8835MotorShield::_M1DIR = 7;
-const unsigned char DRV8835MotorShield::_M2DIR = 8;
-const unsigned char DRV8835MotorShield::_M1PWM = 9;
-const unsigned char DRV8835MotorShield::_M2PWM = 10;
+const unsigned char DRV8835MotorShield::_M1DIR = 6;
+const unsigned char DRV8835MotorShield::_M2DIR = 4;
+const unsigned char DRV8835MotorShield::_M1PWM = 5;
+const unsigned char DRV8835MotorShield::_M2PWM = 3;
 boolean DRV8835MotorShield::_flipM1 = false;
 boolean DRV8835MotorShield::_flipM2 = false;
 
@@ -64,12 +64,23 @@ void DRV8835MotorShield::setM1Speed(int speed)
   OCR1A = speed;
 #else
   analogWrite(_M1PWM, speed * 51 / 80); // default to using analogWrite, mapping 400 to 255
+  Serial.print("M1: ");
+  Serial.print(speed);
+  Serial.print(" - ");
 #endif 
 
   if (reverse ^ _flipM1) // flip if speed was negative or _flipM1 setting is active, but not both
+  {
     digitalWrite(_M1DIR, HIGH);
+    Serial.print(HIGH);
+  }
   else
+  {
     digitalWrite(_M1DIR, LOW);
+    Serial.print(LOW);
+  }
+
+  Serial.println("");
 }
 
 // speed should be a number between -400 and 400
@@ -91,12 +102,23 @@ void DRV8835MotorShield::setM2Speed(int speed)
   OCR1B = speed;
 #else
   analogWrite(_M2PWM, speed * 51 / 80); // default to using analogWrite, mapping 400 to 255
+  Serial.print("M2: ");
+  Serial.print(speed);
+  Serial.print(" - ");
 #endif
 
   if (reverse ^ _flipM2) // flip if speed was negative or _flipM2 setting is active, but not both
+  {
     digitalWrite(_M2DIR, HIGH);
+    Serial.print(HIGH);
+  }
   else
+  {
     digitalWrite(_M2DIR, LOW);
+    Serial.print(LOW);
+  }
+
+  Serial.println("");
 }
 
 // set speed for both motors
