@@ -1,76 +1,76 @@
 #include <DRV8835MotorShield.h>
 
 #define LED_PIN 13
-#define MODE_PIN 6
+#define MODE_PIN 7
 
-#define THROTTLE_IN_PIN 22
-#define STEERING_IN_PIN 23
+#define CH3_IN_PIN 22
+#define CH1_IN_PIN 23
 
-#define THROTTLE_FLAG 1
-#define STEERING_FLAG 2
+#define CH3_FLAG 1
+#define CH1_FLAG 2
 
 #define CHANNEL_TRIM 1500
 #define CHANNEL_DZ 50
 
 volatile uint8_t bUpdateFlagsShared;
 
-volatile uint16_t unThrottleInShared;
-volatile uint16_t unSteeringInShared;
+volatile uint16_t unCH3InShared;
+volatile uint16_t unCH1InShared;
 
-uint32_t ulThrottleStart;
-uint32_t ulSteeringStart;
+uint32_t ulCH3Start;
+uint32_t ulCH1Start;
 
 DRV8835MotorShield motors;
 
 // simple interrupt service routine
-void calcThrottle()
+void calcCH3()
 {
   // if the pin is high, its a rising edge of the signal pulse, so lets record its value
-  if(digitalRead(THROTTLE_IN_PIN) == HIGH)
+  if(digitalRead(CH3_IN_PIN) == HIGH)
   {
-    ulThrottleStart = micros();
+    ulCH3Start = micros();
   }
   else
   {
     // else it must be a falling edge, so lets get the time and subtract the time of the rising edge
     // this gives use the time between the rising and falling edges i.e. the pulse duration.
-    unThrottleInShared = (uint16_t)(micros() - ulThrottleStart);
-    if(unThrottleInShared > 1900)
+    unCH3InShared = (uint16_t)(micros() - ulCH3Start);
+    if(unCH3InShared > 1900)
     {
-      unThrottleInShared = 1900;     
+      unCH3InShared = 1900;     
     }
-    else if(unThrottleInShared < 1100)
+    else if(unCH3InShared < 1100)
     {
-      unThrottleInShared = 1100;     
+      unCH3InShared = 1100;     
     }
-    // use set the throttle flag to indicate that a new throttle signal has been received
-    bUpdateFlagsShared |= THROTTLE_FLAG;
+    // use set the CH3 flag to indicate that a new CH3 signal has been received
+    bUpdateFlagsShared |= CH3_FLAG;
   }
 }
 
 // simple interrupt service routine
-void calcSteering()
+void calcCH1()
 {
   // if the pin is high, its a rising edge of the signal pulse, so lets record its value
-  if(digitalRead(STEERING_IN_PIN) == HIGH)
+  if(digitalRead(CH1_IN_PIN) == HIGH)
   {
-    ulSteeringStart = micros();
+    ulCH1Start = micros();
   }
   else
   {
     // else it must be a falling edge, so lets get the time and subtract the time of the rising edge
     // this gives use the time between the rising and falling edges i.e. the pulse duration.
-    unSteeringInShared = (uint16_t)(micros() - ulSteeringStart);
-    if(unSteeringInShared > 1900)
+    unCH1InShared = (uint16_t)(micros() - ulCH1Start);
+    if(unCH1InShared > 1900)
     {
-      unSteeringInShared = 1900;     
+      unCH1InShared = 1900;     
     }
-    else if(unSteeringInShared < 1100)
+    else if(unCH1InShared < 1100)
     {
-      unSteeringInShared = 1100;     
+      unCH1InShared = 1100;     
     }
-    // use set the throttle flag to indicate that a new throttle signal has been received
-    bUpdateFlagsShared |= STEERING_FLAG;
+    // use set the CH3 flag to indicate that a new CH3 signal has been received
+    bUpdateFlagsShared |= CH1_FLAG;
   }
 }
 
@@ -85,8 +85,8 @@ void setup()
   pinMode(MODE_PIN, OUTPUT);
   digitalWrite(MODE_PIN, HIGH);
 
-  attachInterrupt(THROTTLE_IN_PIN, calcThrottle,CHANGE);
-  attachInterrupt(STEERING_IN_PIN, calcSteering,CHANGE);
+  attachInterrupt(CH3_IN_PIN, calcCH3,CHANGE);
+  attachInterrupt(CH1_IN_PIN, calcCH1,CHANGE);
 
   // uncomment one or both of the following lines if your motors' directions need to be flipped
   //motors.flipM1(true);
@@ -95,8 +95,8 @@ void setup()
 
 void loop()
 {
-  static uint16_t unThrottleIn;
-  static uint16_t unSteeringIn;
+  static uint16_t unCH3In;
+  static uint16_t unCH1In;
 
   static int Motor1Speed;
   static int Motor2Speed;
@@ -109,14 +109,14 @@ void loop()
 
     bUpdateFlags = bUpdateFlagsShared;
    
-    if(bUpdateFlags & THROTTLE_FLAG)
+    if(bUpdateFlags & CH3_FLAG)
     {
-      unThrottleIn = unThrottleInShared;
+      unCH3In = unCH3InShared;
     }
    
-    if(bUpdateFlags & STEERING_FLAG)
+    if(bUpdateFlags & CH1_FLAG)
     {
-      unSteeringIn = unSteeringInShared;
+      unCH1In = unCH1InShared;
     }
    
     bUpdateFlagsShared = 0;
@@ -124,14 +124,14 @@ void loop()
     interrupts();
   }
 
-  if(bUpdateFlags & THROTTLE_FLAG)
+  if(bUpdateFlags & CH3_FLAG)
   {
     digitalWrite(LED_PIN, HIGH);
     
-    Motor1Speed = unThrottleIn - 1500;
+    Motor1Speed = unCH3In - 1500;
     
-    Serial.print("servoThrottle: ");
-    Serial.print(unThrottleIn);
+    Serial.print("servoCH3: ");
+    Serial.print(unCH3In);
     Serial.print(" - ");
     Serial.print(Motor1Speed);
     Serial.println("");
@@ -142,14 +142,14 @@ void loop()
     digitalWrite(LED_PIN, LOW);
   }
  
-  if(bUpdateFlags & STEERING_FLAG)
+  if(bUpdateFlags & CH1_FLAG)
   {
     digitalWrite(LED_PIN, HIGH);
     
-    Motor2Speed = unSteeringIn - 1500;
+    Motor2Speed = unCH1In - 1500;
     
-    Serial.print("servoSteering: ");
-    Serial.print(unSteeringIn);
+    Serial.print("servoCH1: ");
+    Serial.print(unCH1In);
     Serial.print(" - ");
     Serial.print(Motor2Speed);
     Serial.println("");
