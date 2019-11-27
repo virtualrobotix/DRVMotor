@@ -1,6 +1,6 @@
 #include "DRV8835MotorShield.h"
-const unsigned char DRV8835MotorShield::_M1DIR = 6;
-const unsigned char DRV8835MotorShield::_M2DIR = 4;
+const unsigned char DRV8835MotorShield::_M1DIR = 8;
+const unsigned char DRV8835MotorShield::_M2DIR = 7;
 const unsigned char DRV8835MotorShield::_M1PWM = 5;
 const unsigned char DRV8835MotorShield::_M2PWM = 3;
 boolean DRV8835MotorShield::_flipM1 = false;
